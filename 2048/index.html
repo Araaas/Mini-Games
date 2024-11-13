@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048</title>
+</head>
+<style>
+
+    html, body{
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        position: relative;
+
+        background-color: #1a1212;
+    }
+
+    .wrapper{
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+
+        display: grid;
+        grid-template-rows: 150px 150px 150px 150px;
+        grid-template-columns: 150px 150px 150px 150px;
+        align-items: center;
+        justify-items: center;
+    }
+
+    .game-box{
+        position: relative;
+        width: 125px;
+        height: 125px;
+        border-radius: 20%;
+        --background: #1e583179;
+        background-color: var(--background);
+        color: aliceblue;
+        --color: rgb(54, 136, 78);
+        box-shadow: 0 0 15px 5px var(--color);
+        border: none;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        
+    }
+
+    #player{
+        position: absolute;
+        margin: 0;
+
+        width: 100%;
+        text-align: center;
+        
+        color: white;
+        top: -120px;
+        left: 0;
+
+        font-size: 50px;
+    }
+
+    #score{
+        position: absolute;
+        margin: 0;
+
+        width: 100%;
+        text-align: center;
+        
+        color: white;
+        top: -70px;
+        left: 0;
+
+        font-size: 50px;
+    
+    }
+
+    #reset-button{
+        position: absolute;
+        margin: 0;
+        border-radius: 10px;
+        box-shadow: 0 0 15px 5px rgb(112, 3, 3);
+        border: none;
+
+        width: 100%;
+        height: 40px;
+        text-align: center;
+        
+        bottom: -90px;
+        left: 0;
+
+        background-color: rgb(146, 5, 5);
+        color: white;
+
+        cursor: pointer;
+    }
+
+
+</style>
+<body>
+    <div class="wrapper">
+        <h3 id="player"></h3>
+        <h3 id="score">0 Punkte</h3>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+        <div class="game-box"></div>
+
+        <button id="reset-button">Zurücksetzten</button>
+    </div>
+    
+    <script>
+
+        let box = document.getElementsByClassName("game-box");
+        let player = document.getElementById("player");
+        let sc = document.getElementById("score");
+
+
+        let score = 0;
+
+        let fields = [
+            { text: 2, color: "#a3842e"},
+            { text: 4, color: "#e8b117" },
+            { text: 8, color: "#f2b179" },
+            { text: 16, color: "#f59563" },
+            { text: 32, color: "#f67c5f" },
+            { text: 64, color: "#f65e3b" },
+            { text: 128, color: "#edcf72" },
+            { text: 256, color: "#edcc61" },
+            { text: 512, color: "#edc850" },
+            { text: 1024, color: "#edc53f" },
+            { text: 2048, color: "#edc22e" }
+        ];
+
+        let reset_button = document.getElementById("reset-button");
+        reset_button.addEventListener("click", function(){
+            for(let i = 0; i < box.length; i++){
+                box[i].innerText = "";
+                box[i].style = "";
+                box[i].removeAttribute("key");
+            }
+            score = 0;
+            spawnRandom2Field();
+        });                       
+ 
+        spawnRandom2Field();
+
+        window.addEventListener("keydown", function(event){
+            let key = event.key;
+            let moved = false;
+
+            switch(key){
+                case "ArrowUp":
+                    moved = move("up");
+                    break;
+                case "ArrowDown":
+                    moved = move("down");
+                    break;
+                case "ArrowLeft":
+                    moved = move("left");
+                    break;
+                case "ArrowRight":
+                    moved = move("right");
+                    break;
+            }
+
+            if(moved){
+                spawnRandom2Field();
+                checkGameOver();
+            }
+ 
+        });
+
+        function move(direction){
+            let moved = false;
+            let combined = Array(16).fill(false);
+
+            function combine(i1, i2){
+                let val1 = parseInt(box[i1].innerText);
+                let val2 = parseInt(box[i2].innerText);
+                if(val1 === val2 && !combined[i1] && !combined[i2]){
+                    box[i1].innerText = val1 * 2;
+                    box[i2].innerText = "";
+                    box[i2].removeAttribute("key");
+                    box[i1].style = "--color: " + getColor(val1 * 2) + ";" + "--background: " + getColor(val1 * 2);
+                    box[i1].setAttribute("key", val1 * 2);
+
+                    score += val1 * 2;
+
+                    sc.innerText = score + " Punkte";
+
+                    combined[i1] = true;
+                    moved = true;
+                }
+            }
+
+            function shift(indexArray){
+                for(let i = 1; i < indexArray.length; i++){
+                    let j = i;
+                    while(j > 0 && box[indexArray[j-1]].innerText === ""){
+                        box[indexArray[j-1]].innerText = box[indexArray[j]].innerText;
+                        box[indexArray[j-1]].setAttribute("key", box[indexArray[j]].getAttribute("key"));
+                        box[indexArray[j-1]].style = box[indexArray[j]].style;
+                        box[indexArray[j]].innerText = "";
+                        box[indexArray[j]].removeAttribute("key");
+                        box[indexArray[j]].style = "";
+                        j--;
+                        moved = true;
+                    }
+                }
+            }
+
+            let directions = {
+                up: [
+                    [0, 4, 8, 12],
+                    [1, 5, 9, 13],
+                    [2, 6, 10, 14],
+                    [3, 7, 11, 15]
+                ],
+                down: [
+                    [12, 8, 4, 0],
+                    [13, 9, 5, 1],
+                    [14, 10, 6, 2],
+                    [15, 11, 7, 3]
+                ],
+                left: [
+                    [0, 1, 2, 3],
+                    [4, 5, 6, 7],
+                    [8, 9, 10, 11],
+                    [12, 13, 14, 15]
+                ],
+                right: [
+                    [3, 2, 1, 0],
+                    [7, 6, 5, 4],
+                    [11, 10, 9, 8],
+                    [15, 14, 13, 12]
+                ]
+            };
+
+            for(let i = 0; i < 4; i++){
+                shift(directions[direction][i]);
+                for(let j = 0; j < 3; j++){
+                    combine(directions[direction][i][j], directions[direction][i][j+1]);
+                }
+                shift(directions[direction][i]);
+            }
+            updateColors();
+            return moved;
+        }
+
+        function checkGameOver(){
+            let movesLeft = false;
+            for(let i = 0; i < box.length; i++){
+                if(box[i].innerText === ""){
+                    movesLeft = tru;
+                    break;
+                }
+            }
+
+            if(!movesLeft){
+                for(let i = 0; i < box.length; i++){
+                    let val = parseInt(box[i].innerText);
+                    if(i % 4 < 3 && val === parseInt(box[i+1].innerText)){
+                        movesLeft = true;
+                        break;
+                    }
+                    if(i < 12 && val === parseInt(box[i+4].innerText)){
+                        movesLeft = true;
+                        break;
+                    }
+                }
+            }
+            if(!movesLeft){
+                player.innerText = "Das Spiel ist vorbei."
+            }
+        }
+
+        function getColor(value){
+            let color = fields.find(field => field.text === value).color;
+            return color ? color: "#ffff";
+        }
+
+        function updateColors(){
+            for(let i = 0; i < box.length; i++){
+                if(box[i].innerText !== ""){
+                    let value = parseInt(box[i].innerText);
+                    box[i].style = "--color: " + getColor(value) + ";" + "--background: " + getColor(value);
+                }
+            }
+        }
+
+
+        function spawnRandom2Field(){
+            let emptyBoxes = [];
+            for(let i = 0; i < box.length; i++){
+                if(box[i].getAttribute("key") == null){
+                    emptyBoxes.push(i);
+                }
+            }
+
+            if(emptyBoxes.length > 0){
+                let randIndex = emptyBoxes[getRandomNumber(0, emptyBoxes.length)];
+                box[randIndex].innerText = fields[0].text;
+                box[randIndex].style = "--color: " + fields[0].color + ";" + "--background: " + fields[0].color;
+                box[randIndex].setAttribute("key", fields[0].text);
+            }
+        }
+
+        function spawnRandomFieldAtPos(pos){
+            box[pos].innerText = fields[0].text;
+            box[pos].style = "--color: " + fields[0].color + ";" + "--background: " + fields[0].color;
+            box[pos].setAttribute("key", fields[0].text);
+        }
+
+        function getRandomNumber(min, max){
+            min = Math.ceil(min);
+            max = Math.floor(max);
+
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+    </script>
+
+</body>
+</html>

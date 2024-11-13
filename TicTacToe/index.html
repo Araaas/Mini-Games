@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe</title>
+</head>
+<style>
+
+    html, body{
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        position: relative;
+
+        background-color: #1a1212;
+    }
+
+    .wrapper{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+
+        display: grid;
+        grid-template-rows: 250px 250px 250px;
+        grid-template-columns: 250px 250px 250px;
+        align-items: center;
+        justify-items: center;
+    }
+
+    .tictactoe-btn{
+        position: relative;
+        width: 200px;
+        height: 200px;
+        border-radius: 20%;
+        --background: #1e583179;
+        background-color: var(--background);
+        color: aliceblue;
+        --color: rgb(54, 136, 78);
+        box-shadow: 0 0 15px 5px var(--color);
+        border: none;
+
+        font: Arial;
+        font-size: 40px;
+
+        cursor: pointer;
+    }
+
+    #player{
+        position: absolute;
+        margin: 0;
+
+        width: 100%;
+        text-align: center;
+        
+        color: white;
+        top: -70px;
+        left: 0;
+
+        font-size: 50px;
+    }
+
+    #reset-button{
+        position: absolute;
+        margin: 0;
+        border-radius: 10px;
+        box-shadow: 0 0 15px 5px rgb(112, 3, 3);
+        border: none;
+
+        width: 100%;
+        height: 40px;
+        text-align: center;
+        
+        bottom: -90px;
+        left: 0;
+
+        background-color: rgb(146, 5, 5);
+        color: white;
+
+        cursor: pointer;
+    }
+
+    .horizontal-line::after{
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: -27.5px;
+        content: "";
+        height: 5px;
+        width: 250px;
+        background-color: red;
+
+        box-shadow: 0 0 15px 5px rgb(112, 3, 3);
+        border: none;
+    }
+
+    .vertikal-rotate::after{
+        rotate: 90deg;
+    }
+
+    .diagonal-rotate::after{ 
+        /* rotate: 90deg; */
+        transform: translate(-50%, -50%) rotate(-45deg) !important; 
+    }
+
+    .diagonal-line::after{
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+        left: 50%;
+        content: "";
+        height: 5px;
+        width: 354px;
+        background-color: red;
+
+        box-shadow: 0 0 15px 5px rgb(112, 3, 3);
+        border: none;
+    }
+
+</style>
+<body>
+    <div class="wrapper">
+        <h3 id="player"></h3>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+        <button class="tictactoe-btn"></button>
+
+        <button id="reset-button">Zurücksetzten</button>
+    </div>
+    
+    <script>
+
+        let buttons = document.getElementsByClassName("tictactoe-btn");
+        let player = document.getElementById("player");
+
+        let reset_button = document.getElementById("reset-button");
+        let player_decision = 0;
+
+        players = [
+            {
+                symbol: "X",
+                color: "#0373fc",
+                fields: {
+                    0 : false,
+                    1 : false,
+                    2 : false,
+                    3 : false,
+                    4 : false,
+                    5 : false,
+                    6 : false,
+                    7 : false,
+                    8 : false
+                }
+            },
+            {
+                symbol: "O",
+                color: "#eb282e",
+                fields: {
+                    0 : false,
+                    1 : false,
+                    2 : false,
+                    3 : false,
+                    4 : false,
+                    5 : false,
+                    6 : false,
+                    7 : false,
+                    8 : false
+                }
+            }
+        ]
+
+
+        player.textContent = "Spieler " + (player_decision + 1) + " ist am Zug.";
+
+        reset_button.addEventListener("click", function(){
+            for(let i = 0; i < buttons.length; i++){
+                buttons[i].classList = "tictactoe-btn";
+                buttons[i].textContent = "";
+                buttons[i].setAttribute("state", null)
+                buttons[i].style = "";
+            }
+
+            for(let i = 0; i < players.length; i++){
+                for(field in players[i]["fields"]){
+                    players[i]["fields"][field] = false;
+                }
+            }
+
+            player_decision = 0;
+            player.textContent = "Spieler " + (player_decision + 1) + " ist am Zug.";
+        });
+
+        for(let i = 0; i < buttons.length; i++){
+            buttons[i].addEventListener("click", function(){
+                //BUTTON STATE 0 = NOT CLICKED O = 1, X = 2
+                if(buttons[i].getAttribute("state") == "0"){
+                    return;
+                }else if(buttons[i].getAttribute("state") == "1"){
+                    return;
+                }else{
+                    buttons[i].setAttribute("state", player_decision)
+
+                    buttons[i].style = "--color: " + players[player_decision]["color"] + ";" + "--background: " + players[player_decision]["color"];
+
+                    buttons[i].textContent = players[player_decision]["symbol"];
+    
+                    player.textContent = "Spieler " + (player_decision + 1) + " ist am Zug.";
+ 
+
+                    players[player_decision]["fields"][i] = true;
+
+
+                    for(field in players[player_decision]["fields"]){
+                        let sel_field = players[player_decision]["fields"];
+                        field = Number(field);
+                        if(player_decision == -1) return;
+                        if(sel_field[field] == true){
+
+                            // Links -> Rechts || Rechts -> Links
+                            if(((field + 1) % 3 == 0) && (sel_field[field - 1]) == true && (sel_field[field - 2]) == true){
+                                player.textContent = "Spieler " + (player_decision + 1) + " hat gewonnen.";
+
+                                buttons[field].classList.add("horizontal-line");
+                                buttons[field - 1].classList.add("horizontal-line");
+                                buttons[field - 2].classList.add("horizontal-line");
+
+                                player_decision = -1;
+
+                                return;
+                            }
+
+                            // Oben -> Unten || Unten -> Oben Erste
+                            if(((field + 1) <= 6 && (field + 1) >= 4) && (sel_field[field - 3]) == true && (sel_field[field + 3]) == true){
+                                player.textContent = "Spieler " + (player_decision + 1) + " hat gewonnen.";
+
+                                buttons[field].classList.add("horizontal-line", "vertikal-rotate");
+                                buttons[field - 3].classList.add("horizontal-line", "vertikal-rotate");
+                                buttons[field + 3].classList.add("horizontal-line","vertikal-rotate");
+
+                                player_decision = -1;
+
+                                return;
+                            }
+
+                            // Kreuz O-U
+                            if((field + 1) == 5 && (sel_field[field - 4]) == true && (sel_field[field + 4]) == true){
+                                player.textContent = "Spieler " + (player_decision + 1) + " hat gewonnen.";
+
+                                buttons[field].classList.add("diagonal-line");
+                                buttons[field - 4].classList.add("diagonal-line");
+                                buttons[field + 4].classList.add("diagonal-line");
+
+                                player_decision = -1;
+
+                                return;
+                            }
+
+                            // Kreuz U-O
+                            if((field + 1) == 5 && (sel_field[field - 2]) == true && (sel_field[field + 2]) == true){
+                                player.textContent = "Spieler " + (player_decision + 1) + " hat gewonnen.";
+
+                                buttons[field].classList.add("diagonal-line","diagonal-rotate");
+                                buttons[field - 2].classList.add("diagonal-line","diagonal-rotate");
+                                buttons[field + 2].classList.add("diagonal-line","diagonal-rotate");
+
+                                player_decision = -1;
+
+                                return;
+                            }                            
+                        }
+                    }
+                    player_decision = (player_decision + 1) % players.length;
+                    player.textContent = "Spieler " + (player_decision + 1) + " ist am Zug.";
+                }
+            })
+        }
+
+    </script>
+
+</body>
+</html>
